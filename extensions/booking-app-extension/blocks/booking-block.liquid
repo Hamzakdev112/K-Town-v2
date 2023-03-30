@@ -1,0 +1,26 @@
+{% render "booking-snip" %}
+{% schema %}
+  {
+    "name": "Booking App",
+    "target": "section",
+    "enabled_on": {
+      "templates": ["product"]
+    },
+    "stylesheet": "../assets/app.css",
+    "javascript": "../assets/app.js",
+    "settings": [
+      {
+        "label": "Color",
+        "id": "color",
+        "type": "color",
+        "default": "#000000"
+      }
+    ]
+  }
+{% endschema %}
+
+<script>
+  fetch('/booking/checkbooking').then(response => response.json())
+
+  console.log(response);
+</script>
