@@ -27,6 +27,10 @@ export default function App() {
               label: "Debug Cards",
               destination: "/debug",
             },
+            {
+              label: "Calendar",
+              destination: "/debug/calendar",
+            }
           ]}
         />
         <ApolloClientProvider>{RouteComponents}</ApolloClientProvider>

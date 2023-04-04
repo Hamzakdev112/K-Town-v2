@@ -118,7 +118,6 @@ const updateDashboardURLs = async (apiKey, appUrl) => {
 console.warn("--> This is for use in DEV mode only");
 console.log("--> Fetching Access Tokens");
 const accessToken = await ensureAuthenticatedPartners();
-//const accessToken = "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";
 console.log("--> Fetching Orgs");
 await selectOrg(accessToken);
 console.log("--> Fetching App Data");

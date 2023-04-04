@@ -92,18 +92,17 @@ const handleSearch = async()=>{
 
         <Layout.Section fullWidth>
           <LegacyCard
-            title="Debug Cards"
+            title="Google Calender"
             sectioned
             primaryFooterAction={{
-              content: "Debug Cards",
+              content: "Explore",
               onAction: () => {
                 navigate("/debug");
               },
             }}
             >
             <p>
-              Explore how the repository handles data fetching from the backend,
-              App Proxy, making GraphQL requests, Billing API and more.
+            Track your orders here
             </p>
           </LegacyCard>
         </Layout.Section>

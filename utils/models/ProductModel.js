@@ -7,17 +7,18 @@ const productSchema = new mongoose.Schema({
     productTitle:{
         type:String,
     },
-    date:{
+    startTime:{
         type:String,
     },
-    times:{
-        type:[String]
+    endTime:{
+        type:String
     },
-    test:{
-        type:Object
-    }
-
+    duration:{
+        type:String
+    },
+    bookingDate:{
+        type:Date
+    },
 })
-productSchema.index({ bookingDate: 1 }, { expireAfterSeconds: 60 });
 
 export default mongoose.model('Product', productSchema)
