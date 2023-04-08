@@ -22,6 +22,7 @@ import proxyRouter from "./routes/app_proxy/index.js";
 import userRoutes from "./routes/index.js";
 import webhookRegistrar from "./webhooks/index.js";
 import bookingRoute from './routes/booking.js'
+import orderRoute from './routes/order.js'
 
 
 setupCheck(); // Run a check to ensure everything is setup properly
@@ -98,6 +99,7 @@ const createServer = async (root = process.cwd()) => {
   app.use("/apps", userRoutes); //Verify user route requests
   app.use("/proxy_route", verifyProxy, proxyRouter); //MARK:- App Proxy routes
   app.use("/booking", bookingRoute); //MARK:- App Proxy routes
+  app.use("/orders", orderRoute); //MARK:- App Proxy routes
 
   app.post("/gdpr/:topic", verifyHmac, async (req, res) => {
     const { body } = req;

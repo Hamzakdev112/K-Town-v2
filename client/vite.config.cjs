@@ -57,6 +57,7 @@ export default defineConfig({
       "^/auth(/|(\\?.*)?$)": proxyOptions,
       "^/apps(/|(\\?.*)?$)": proxyOptions,
       "^/booking(/|(\\?.*)?$)": proxyOptions,
+      "^/orders(/|(\\?.*)?$)": proxyOptions,
       "^/proxy_route(/|(\\?.*)?$)": proxyOptions,
       "^/graphql(/|(\\?.*)?$)": proxyOptions,
       "^/webhooks(/|(\\?.*)?$)": proxyOptions,

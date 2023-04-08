@@ -4,6 +4,9 @@ const productSchema = new mongoose.Schema({
     productId:{
         type:String,
     },
+    variantId:{
+        type:String,
+    },
     productTitle:{
         type:String,
     },
@@ -14,7 +17,7 @@ const productSchema = new mongoose.Schema({
         type:String
     },
     duration:{
-        type:String
+        type:Number
     },
     bookingDate:{
         type:Date

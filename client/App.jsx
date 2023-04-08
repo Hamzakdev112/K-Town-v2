@@ -21,18 +21,18 @@ export default function App() {
   return (
     <PolarisProvider i18n={translations}>
       <AppBridgeProvider config={appBridgeConfig}>
-        <NavigationMenu
+        {/* <NavigationMenu
           navigationLinks={[
             {
-              label: "Debug Cards",
-              destination: "/debug",
+              label: "Calender",
+              destination: "/calender",
             },
             {
-              label: "Calendar",
-              destination: "/debug/calendar",
-            }
+              label: "Orders",
+              destination: "/orders",
+            },
           ]}
-        />
+        /> */}
         <ApolloClientProvider>{RouteComponents}</ApolloClientProvider>
       </AppBridgeProvider>
     </PolarisProvider>
