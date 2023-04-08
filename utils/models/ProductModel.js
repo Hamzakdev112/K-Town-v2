@@ -4,6 +4,9 @@ const productSchema = new mongoose.Schema({
     productId:{
         type:String,
     },
+    orderNumber:{
+        type:String,
+    },
     variantId:{
         type:String,
     },

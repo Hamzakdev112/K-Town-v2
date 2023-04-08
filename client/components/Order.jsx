@@ -28,7 +28,7 @@ import EditOrder from './EditOrder';
 
     const rowMarkup = orders?.map(
       (
-        {productTitle,_id, order, bookingDate, startTime, endTime, paymentStatus, fulfillmentStatus},
+        {productTitle,_id, orderNumber, bookingDate, startTime, endTime, paymentStatus, fulfillmentStatus},
         index,
       ) => (
         <IndexTable.Row
@@ -37,9 +37,8 @@ import EditOrder from './EditOrder';
           // selected={selectedResources.includes(id)}
           // position={index}
         >
-          <IndexTable.Cell>
+          <IndexTable.Cell>{orderNumber}</IndexTable.Cell>
           <IndexTable.Cell>{productTitle}</IndexTable.Cell>
-          </IndexTable.Cell>
           <IndexTable.Cell>{ moment(bookingDate).format("DD-MM-YYYY")}</IndexTable.Cell>
           <IndexTable.Cell>{startTime} - {endTime}</IndexTable.Cell>
           <IndexTable.Cell><button onClick={()=>handleModalOpen(_id)}>Edit</button></IndexTable.Cell>
@@ -59,6 +58,7 @@ import EditOrder from './EditOrder';
           }
           onSelectionChange={handleSelectionChange}
           headings={[
+            {title: 'Order'},
             {title: 'Product Title'},
             {title: 'Date'},
             {title: 'Time',},

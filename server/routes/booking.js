@@ -8,6 +8,7 @@ router.post('/book', async (req, res) => {
   try {
     const { line_items } = req.body;
     console.log(req.body)
+    const {name:orderNumber} = req.body
     const { properties, product_id, variant_title, title } = line_items[0]
     const duration = parseInt(variant_title) + 0.5
     const date = properties?.find((p) => p.name === "Date")
@@ -25,6 +26,7 @@ router.post('/book', async (req, res) => {
       startTime: start,
       endTime: end,
       bookingDate:new Date(date.value),
+      orderNumber
     })
     res.status(200).json(product)
   }
