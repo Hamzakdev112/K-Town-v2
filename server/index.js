@@ -23,6 +23,8 @@ import userRoutes from "./routes/index.js";
 import webhookRegistrar from "./webhooks/index.js";
 import bookingRoute from './routes/booking.js'
 import orderRoute from './routes/order.js'
+import productsRoute from './routes/products.js'
+import calenderRoute from './routes/calender.js'
 
 
 setupCheck(); // Run a check to ensure everything is setup properly
@@ -98,8 +100,10 @@ const createServer = async (root = process.cwd()) => {
   // If you're making changes to any of the routes, please make sure to add them in `./client/vite.config.cjs` or it'll not work.
   app.use("/apps", userRoutes); //Verify user route requests
   app.use("/proxy_route", verifyProxy, proxyRouter); //MARK:- App Proxy routes
-  app.use("/booking", bookingRoute); //MARK:- App Proxy routes
-  app.use("/orders", orderRoute); //MARK:- App Proxy routes
+  app.use("/booking", bookingRoute);
+  app.use("/orders", orderRoute);
+  app.use("/products", productsRoute);
+  app.use("/calender", calenderRoute);
 
   app.post("/gdpr/:topic", verifyHmac, async (req, res) => {
     const { body } = req;

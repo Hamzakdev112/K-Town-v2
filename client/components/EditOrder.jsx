@@ -2,47 +2,77 @@ import { Modal, Spinner } from '@shopify/polaris'
 import React, { useEffect, useState } from 'react'
 import useFetch from '../hooks/useFetch'
 import moment from 'moment'
+import "flatpickr/dist/themes/material_green.css";
+import Flatpickr from "react-flatpickr";
+import '../styles/editorder.css'
+import { changeOrder, fetchavailableTimesOfOrder } from '../apiCalls/ordersApis';
+import { useDispatch } from 'react-redux';
 
-const EditOrder = ({editOpen,setEditOpen,orderId}) => {
-    const [loading, setLoading] = useState(false)
-    const [order, setOrder] = useState(null)
+const EditOrder = ({editOpen,setEditOpen,order,setOrder}) => {
+    const [updating, setUpdating] = useState(false)
+    const [checkBookingLoading, setCheckBookingLoading] = useState(false)
+    const [times, setTimes] = useState(null)
+    const [selectedTime, setSelectedTime] = useState(null)
+    const [bookingDate, setBookingDate] = useState(order.bookingDate)
+    const [notification, setNotification] = useState(false)
     const fetch = useFetch()
-    const getOrderById = async ()=>{
-        try{
-            setLoading(true)
-            const response = await fetch(`orders/single/${orderId}`)
-            const data = await response.json()
-            setOrder(data)
-            setLoading(false)
-        }
-        catch(err){
-            setLoading(false)
-            console.log(err)
-        }
+    const dispatch = useDispatch()
+
+    const handleClose = ()=>{
+        setEditOpen(false)
+        setOrder(null)
     }
+
     useEffect(()=>{
-        getOrderById()
-    },[orderId ])
+        fetchavailableTimesOfOrder(setCheckBookingLoading,setSelectedTime,setTimes,order.productId,order.duration,bookingDate)
+    },[bookingDate])
   return (
     <div>
-
             <Modal
             open={editOpen}
-        onClose={()=>setEditOpen(false)}
+        onClose={handleClose}
+        primaryAction={{
+            content:"Change",
+            onAction:()=>changeOrder(setOrder,setUpdating,setEditOpen,fetch,dispatch,{
+                orderId:order._id,
+                selectedTime,
+                bookingDate,
+                duration:order.duration,
+                notification
+            }),
+            loading:updating,
+            disabled:selectedTime === null
+        }}
         >
-         {
-            loading ?<div style={{width:'100%',height:"100px", display:'flex', justifyContent:'center', alignItems:'center'}}> <Spinner /></div> :
          <Modal.Section>
-            {
-                order &&
-                <div style={{display:'flex', flexDirection:'column', gap:'10px'}}>
-                <span>Booking Date: {moment(order.bookingDate).format("DD-MM-YYYY")}</span>
-                <span>Start Time: {order.startTime}</span>
-                <span>End Time: {order.endTime}</span>
+                <div className='date-picker-container' >
+                {/* <span>Booking Date: {moment(bookingDate).format("DD-MM-YYYY")}</span> */}
+                <span>Change booking date</span>
+                <Flatpickr
+                unselectable={bookingDate}
+                onChange={([value])=>setBookingDate(moment(value).format("YYYY-MM-DD"))}
+        value={bookingDate}
+      />
             </div>
-            }
-         </Modal.Section>
+            <div className='available-times-container'>
+        {
+            checkBookingLoading ? <div className='available-times-loading' ><Spinner /></div> :
+        times &&
+
+        times.map((time)=>(
+            <button
+            onClick={()=>(setSelectedTime(time))}
+            className={`edit-order-time-button ${selectedTime === time && "selected-time"}`}
+             key={time}
+             >{time}</button>
+        ))
         }
+        </div>
+        <div style={{display:'flex', alignItems:'center', marginTop:'20px'}}>
+        <span>Notify Customer</span>
+        <input onChange={(e)=>setNotification(e.target.checked)} type="checkbox" />
+        </div>
+         </Modal.Section>
         </Modal>
     </div>
   )

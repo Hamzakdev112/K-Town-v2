@@ -2,7 +2,7 @@ import crypto from "crypto";
 
 const verifyProxy = (req, res, next) => {
   const { signature } = req.query;
-
+  console.log(signature)
   const queryURI = req._parsedUrl.query
     .replace("/?", "")
     .replace(/&signature=[^&]*/, "")

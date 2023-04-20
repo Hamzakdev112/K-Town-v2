@@ -23,8 +23,13 @@ const productSchema = new mongoose.Schema({
         type:Number
     },
     bookingDate:{
-        type:Date
+        type:String
     },
+    createdAt:{
+        type:Date,
+    },
+},{
+    expireAfterSeconds:'60'
 })
 
 export default mongoose.model('Product', productSchema)

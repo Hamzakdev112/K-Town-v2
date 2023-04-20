@@ -1,23 +1,19 @@
 import {
+  Button,
     IndexTable,
     LegacyCard,
     useIndexResourceState,
-    Text,
-    Badge,
   } from '@shopify/polaris';
   import React, { useState } from 'react';
 import moment from 'moment';
 import EditOrder from './EditOrder';
   const Order = ({orders})=> {
-
     const [editOpen, setEditOpen] = useState(false)
-    const [orderId, setOrderId] = useState('')
-    const handleModalOpen = (orderId)=>{
+    const [order, setOrder] = useState(null)
+    const handleModalOpen = (order)=>{
       setEditOpen(true)
-      setOrderId(orderId)
+      setOrder(order)
     }
-
-    console.log(orderId)
     const resourceName = {
       singular: 'order',
       plural: 'orders',
@@ -26,31 +22,31 @@ import EditOrder from './EditOrder';
     const {selectedResources, allResourcesSelected, handleSelectionChange} =
       useIndexResourceState(orders);
 
-    const rowMarkup = orders?.map(
-      (
-        {productTitle,_id, orderNumber, bookingDate, startTime, endTime, paymentStatus, fulfillmentStatus},
-        index,
-      ) => (
+    const rowMarkup = orders?.map((o,index) => {
+      const {productTitle,_id, orderNumber, bookingDate, startTime, endTime, paymentStatus, fulfillmentStatus} = o
+      const start = moment(startTime, 'hh:mm A').add(30, "minutes").format("hh:mm A")
+      const end = moment(endTime, 'hh:mm A').subtract(30, "minutes").format("hh:mm A")
+      return(
         <IndexTable.Row
-          id={_id}
+        id={_id}
           key={_id}
-          // selected={selectedResources.includes(id)}
-          // position={index}
         >
           <IndexTable.Cell>{orderNumber}</IndexTable.Cell>
           <IndexTable.Cell>{productTitle}</IndexTable.Cell>
           <IndexTable.Cell>{ moment(bookingDate).format("DD-MM-YYYY")}</IndexTable.Cell>
-          <IndexTable.Cell>{startTime} - {endTime}</IndexTable.Cell>
-          <IndexTable.Cell><button onClick={()=>handleModalOpen(_id)}>Edit</button></IndexTable.Cell>
-          {/* <IndexTable.Cell>{endTime}</IndexTable.Cell>
-          <IndexTable.Cell>{fulfillmentStatus}</IndexTable.Cell> */}
+          <IndexTable.Cell>{start} - {end}</IndexTable.Cell>
+          <IndexTable.Cell>
+            <Button size='slim' primary={order?.orderNumber == orderNumber} onClick={()=>handleModalOpen(o)}>Edit</Button>
+            </IndexTable.Cell>
         </IndexTable.Row>
-      ),
+        )
+    },
     );
 
     return (
       <LegacyCard>
         <IndexTable
+          selectable={false}
           resourceName={resourceName}
           itemCount={orders.length}
           selectedItemsCount={
@@ -63,15 +59,13 @@ import EditOrder from './EditOrder';
             {title: 'Date'},
             {title: 'Time',},
             {title: 'Actions',},
-            // {title: 'End Time'},
-            // {title: 'Fulfillment status'},
           ]}
         >
           {rowMarkup}
         </IndexTable>
         {
           editOpen &&
-          <EditOrder orderId={orderId} setEditOpen={setEditOpen} editOpen={editOpen} />
+          <EditOrder setOrder={setOrder} order={order} setEditOpen={setEditOpen} editOpen={editOpen} />
         }
       </LegacyCard>
     );

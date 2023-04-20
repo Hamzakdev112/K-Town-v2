@@ -1,45 +1,45 @@
-import { Router, json } from 'express'
+import { Router } from 'express'
 import ProductModel from '../../utils/models/ProductModel.js'
 import moment from 'moment'
 import axios from 'axios'
+import { google } from 'googleapis'
+import {sendEmail} from '../../utils/sendEmail.js'
+import verifyRequest from '../middleware/verifyRequest.js'
 const router = Router()
 
 router.post('/book', async (req, res) => {
   try {
-    const { line_items } = req.body;
-    console.log(req.body)
-    const {name:orderNumber} = req.body
-    const { properties, product_id, variant_title, title } = line_items[0]
-    const duration = parseInt(variant_title) + 0.5
-    const date = properties?.find((p) => p.name === "Date")
-    const time = properties?.find((p) => p.name === "Time")
+    const { line_items, name: orderNumber, created_at: createdAt } = req.body;
+    const { properties, product_id, variant_title, title, email, variant_id: variantId } = line_items[0]
+    const duration = parseInt(variant_title) + 0.5 // Adding 0.5 will add half hour to the booking date
+    const date = properties?.find((p) => p.name === "Date") //booking Date Sent By User
+    const time = properties?.find((p) => p.name === "Time")// booking Time Sent By User
+    const bookingDate = moment(date.value).format("YYYY-MM-DD")
     const timeInMoment = moment(time.value, 'hh:mm A');
-    const subtractedTime = timeInMoment.clone().subtract(30, 'minutes');
-    const start = subtractedTime.format('hh:mm A');
-    console.log(start)
-    const endTime = timeInMoment.clone().add(duration, 'hours');
-    const end = endTime.format('hh:mm A');
-    console.log(date)
+    const start = timeInMoment.clone().subtract(30, 'minutes').format('hh:mm A');
+    const end = timeInMoment.clone().add((duration * 60), 'minutes').format('hh:mm A');
     const product = await ProductModel.create({
+      duration: parseInt(variant_title),
       productId: product_id,
       productTitle: title,
       startTime: start,
       endTime: end,
-      bookingDate:new Date(date.value),
-      orderNumber
+      bookingDate,
+      orderNumber,
+      variantId,
+      createdAt,
     })
     res.status(200).json(product)
   }
   catch (err) {
-    console.log(err.message)
-    res.json(err.message)
+    res.status(500).json(err.message)
   }
 
 })
 
 router.post('/checkbooking', async (req, res) => {
   try {
-    const { product_id:productId, variant_id, date:bookingDate } = req.body
+    const { product_id: productId, variant_id, date: bookingDate,variant_title } = req.body
     const body = {
       query: `{
             node(id:"gid://shopify/ProductVariant/${variant_id}"){
@@ -54,19 +54,28 @@ router.post('/checkbooking', async (req, res) => {
             }
           }`, variables: {}
     }
-    const { data: productInfo } = await axios.post(
-      process.env.STOREFRONT_API,
-      body,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-Shopify-Storefront-Access-Token": process.env.STOREFRONT_ACCESS_TOKEN
-        }
-      }
-    )
-    const duration = parseInt(productInfo.data.node.title);
-    const currenttimeFromMetafields=  "10:09 am"
-    const openingTime =  "09:00 AM";
+    // const { data: productInfo } = await axios.post(
+    //   process.env.STOREFRONT_API,
+    //   body,
+    //   {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "X-Shopify-Storefront-Access-Token": process.env.STOREFRONT_ACCESS_TOKEN
+    //     }
+    //   }
+    // )
+    let openingTime = "09:00 AM";
+    const openMoment = moment(openingTime, "hh:mm a")
+    const currentTime = moment()
+    const currentDate = currentTime.clone().format('YYYY-MM-DD')
+    currentTime.hour(currentTime.hour() + 1).startOf('hour').minute(0);
+    if (currentTime.isAfter(openMoment) && currentDate === bookingDate) {
+      openingTime = currentTime.format("hh:mm A");
+    }
+
+
+    // const duration = parseInt(productInfo.data.node.title.at(0));
+    const duration = parseInt(variant_title);
     const closingTimeBeforeSubstraction = "07:00 PM";
     const closingTimeBeforeSubstractionInMoment = moment(closingTimeBeforeSubstraction, 'hh:mm A');
     const newClosingMoment = closingTimeBeforeSubstractionInMoment.clone().subtract(duration - 0.5, 'hours');
@@ -81,7 +90,7 @@ router.post('/checkbooking', async (req, res) => {
     // Retrieve existing bookings for the product and booking date
     const overlappingBookings = await ProductModel.find({
       productId: productId,
-      bookingDate: new Date(bookingDate),
+      bookingDate: bookingDate,
     });
 
     // Filter for available time slots
@@ -111,84 +120,180 @@ router.post('/checkbooking', async (req, res) => {
     }
 
     res.status(200).json(availableSlots);
-    // const duration = parseInt(productInfo.data.node.title)
-    // const metafields = JSON.parse(productInfo.data.node.metafield.value)
-    // const bookings = await ProductModel.find({
-    //   $and: [
-    //     { productId: product_id },
-    //   ]
-    // })
-    // const bookedTimeslots = [];
-    // // Loop through each document of bookings
-    // bookings.forEach((booking) => {
-    //   const { startTime, endTime } = booking;
-
-    //   // Convert start and end times to Moment objects
-    //   const startMoment = moment(startTime, 'h:mm A');
-    //   const endMoment = moment(endTime, 'h:mm A');
-
-    //   // Calculate the number of timeslots between start and end times
-    //   const timeslotsCount = endMoment.diff(startMoment, 'minutes') / 30;
-
-    //   // Loop through each timeslot and add it to the booked timeslots array
-    //   for (let i = 0; i < timeslotsCount; i++) {
-    //     const timeslot = startMoment.add(30, 'minutes').format('hh:mm A');
-    //     bookedTimeslots.push(timeslot);
-    //   }
-    // });
-    // const availableSlots = metafields.filter((date)=> !bookedTimeslots.includes(date))
-    // res.status(200).json(availableSlots)
   } catch (err) {
     console.log(err.message)
   }
 })
 
+const UpdateCalender = async (data) => {
+  const CREDENTIALS = JSON.parse(process.env.CREDENTIALS);
+  const calendarId = process.env.CALENDAR_ID;
+
+  // Google calendar API settings
+  const SCOPES = 'https://www.googleapis.com/auth/calendar';
+  const calendar = google.calendar({ version: "v3" });
+
+  const auth = new google.auth.JWT(
+    CREDENTIALS.client_email,
+    null,
+    CREDENTIALS.private_key,
+    SCOPES
+  );
+
+  console.log(data)
+
+  // var data = {
+  //   bookingDate: "2023-04-15",
+  //   duration: 2,
+  //   orderId: "64344620b04bb37389d59363",
+  //   time: "12:30 pm",
+  //   name: "#1066"
+  //   }
+
+
+  // let start = '2023-04-01T11:10:00.000Z';
+  // let end = '2100-04-30T12:10:00.000Z';
+  let events = "";
+  let updateId = "";
+
+  const getEvents = async () => {
+    try {
+      let response = await calendar.events.list({
+        auth: auth,
+        calendarId: calendarId,
+        // timeMin: start,
+        // timeMax: end,
+        singleEvents: true,
+        orderBy: 'startTime'
+      });
+      if (response.data.items.length === 0) {
+        return 0;
+      } else {
+        return response.data.items;
+      }
+    } catch (error) {
+      console.log(`Error at getEvents --> ${error}`);
+      return 0;
+    }
+  };
 
 
 
+  getEvents()
+    .then((res) => {
+      if (res != 0) {
+        let events = res;
+        console.log(events);
 
-// router.post('/checkbooking', async(req,res)=>{
-//     try{
-//         const hours = 1
-//         const {metafields:metafieldsInString, product_id, variant_id} = req.body
-//         console.log(variant_id)
-//         const metafields = JSON.parse(metafieldsInString)
-//         const product = await ProductModel.findOne({
-//             $and:[
-//                 {productId:product_id},
-//             ]
-//         })
-//         if(!product){
-//             return res.status(200).json(metafields)
-//         }
-//         const formattedTimes = metafields.map(date => moment(date, 'ha').format('HH:mm'));
-//         const times = formattedTimes.filter((date)=> !product.times.includes(date))
-//         const availableTimes = times.map(date => moment(date, 'HH:mm').format('h:mm a'));
-//         const newArray = []
-//         for (let i=0; i < availableTimes.length; i++){
-//             const diff = moment(availableTimes[i + 1], "HH:mm").diff(moment(availableTimes[i], "HH:mm"), "hours");
-//             if(diff === 1){
-//                 newArray.push(availableTimes[i])
-//                 newArray.push(availableTimes[i + 1])
-//             }
-//             else{
-//                 break;
-//             }
-//         }
-//         const compareDiff = moment(newArray[newArray.length - 1], "HH:mm").diff(moment(newArray[0], "HH:mm"), "hours")
-//         if ( compareDiff >= hours) {
-//             return res.status(200).json(availableTimes)
-//         } else {
-//             const removeFromTimes = availableTimes.filter((time)=>!newArray.includes(time))
-//             return res.status(200).json(removeFromTimes)
-//           }
-//     }catch(err){
-//         console.log(err.message)
-//     }
-// })
+        console.log(data.name);
+
+        events.filter((event) => {
+          if (event.summary.includes(data.name)) {
+            console.log(event.id);
+            updateId = event.id;
+          }
+        });
+      }
+
+      let eventId = updateId;
+
+      let startdate = moment(data['bookingDate']).format('YYYY-MM-DD');
+      let enddate = moment(data['bookingDate']).format('YYYY-MM-DD');
+      let time = data['time'];
+      let duration = data['duration'];
+      let startdat = moment(`${startdate} ${time}`).format('YYYY-MM-DDTHH:mm:ss');
+      let enddat = moment(`${enddate} ${time}`).add(duration, 'hours').format('YYYY-MM-DDTHH:mm:ss');
+      console.log(startdat);
+      console.log(enddat);
+      let event = {
+        'start': {
+          'dateTime': startdat,
+          'timeZone': 'Asia/Karachi'
+        },
+        'end': {
+          'dateTime': enddat,
+          'timeZone': 'Asia/Karachi'
+        }
+      };
+      const updateEvent = async (eventId, event) => {
+        try {
+          let response = await calendar.events.patch({
+            auth: auth,
+            calendarId: calendarId,
+            eventId: eventId,
+            resource: event
+          });
+          if (response.data === '') {
+            return 1;
+          } else {
+            return 0;
+          }
+        } catch (error) {
+          console.log(`Error at updateEvent --> ${error}`);
+          return 0;
+        }
+      };
+      updateEvent(eventId, event)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
 
 
+router.put('/change',verifyRequest, async (req, res) => {
+  try {
+    const { orderId, time, bookingDate,notification } = req.body
+    console.log(req.body)
+    console.log('test')
+    const duration = req.body.duration + 0.5
+    const timeInMoment = moment(time, 'hh:mm A');
+    const start = timeInMoment.clone().subtract(30, 'minutes').format("hh:mm A");
+    const end = timeInMoment.clone().add(duration, 'hours').format('hh:mm A');
+    const product = await ProductModel.findById(orderId)
+    product.bookingDate = bookingDate
+    product.startTime = start
+    product.endTime = end
+    await product.save()
+    UpdateCalender({
+      duration: parseInt(duration - 0.5),
+      eventId: "7o5fsibjssa6mi5gb40p0q85p8",
+      bookingDate,
+      time,
+      name: product.orderNumber
+    })
+    res.status(200).json({})
+    console.log(notification)
+    if(notification === true){
+      sendEmail({
+        email:"immersivetechlabs@gmail.com",
+        subject:"Booking Update",
+        text:`Your Booking has been changed to ${bookingDate} at ${time} `
+      })
+    }
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
+router.post('/delete', async (req, res) => {
+  try {
+    const { name } = req.body
+     await ProductModel.deleteOne({
+      orderNumber:name
+    })
+    res.status(200).json("order deleted")
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
 
 export default router

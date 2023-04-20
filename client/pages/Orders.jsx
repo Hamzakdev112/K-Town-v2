@@ -5,30 +5,17 @@ import React, { useEffect, useState } from "react";
 import GoogleCalendar from "../components/GoogleCalendar";
 import Order from "../components/Order";
 import useFetch from "../hooks/useFetch";
+import { fetchAllOrders } from "../apiCalls/ordersApis";
+import { useDispatch, useSelector } from "react-redux";
 
 const Orders = () => {
   const fetch  = useFetch()
   const app = useAppBridge();
-    const [orders, setOrders] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const fetchOrders = async ()=>{
-        try{
-            setLoading(true)
-            const response = await fetch("orders/all")
-            const data = await response.json()
-            setOrders(data)
-            setLoading(false)
-        }catch(err){
-            setLoading(false)
-            console.log(err)
-        }
-    }
-
-
+  const dispatch = useDispatch()
+  const {orders, isFetching:loading} = useSelector((state)=>state.orders)
     useEffect(()=>{
-        fetchOrders()
+        fetchAllOrders(fetch,dispatch)
     }, [])
-
   return (
     <Frame>
         {

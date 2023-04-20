@@ -1,0 +1,39 @@
+.edit-order-time-button{
+    background-color: transparent;
+    width: 90px;
+    font-size: 13px;
+    border: 1px solid gray;
+    border-radius: 20px;
+    transition: 0.3s ease all;
+    padding: 3px;
+}
+.edit-order-time-button:hover{
+    cursor: pointer;
+    background-color: black;
+    color: white;
+}
+.selected-time{
+    background-color: black ;
+    color: white;
+}
+
+
+.date-picker-container{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.available-times-container{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.available-times-loading{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

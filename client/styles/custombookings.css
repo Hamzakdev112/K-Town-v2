@@ -1,0 +1,69 @@
+.custom-bookings-products-container{
+    width: 100%;
+    display: flex;
+}
+.custom-bookings-products-search-loading{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.custom-bookings-product-image{
+    width: 50px;
+    height: 50px;
+}
+.custom-bookings-selected-product-container{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.custom-bookings-date-picker{
+    width: 50%;
+    margin-top: 20px;
+}
+.custom-bookings-dates-container{
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+.custom-booking-available-times-container{
+    width: 50%;
+    height: 100%;
+    gap: 10px;
+    display: flex;
+    margin: auto;
+    flex-wrap: wrap;
+}
+.custom-bookings-variants-container{
+    display: flex;
+    margin: auto;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+@media (max-width:1000px){
+    .custom-bookings-dates-container{
+        flex-direction: column;
+    }
+    .custom-booking-available-times-container{
+        width: 100%;
+        justify-content: center;
+    }
+    .custom-bookings-date-picker{
+        width: 100%;
+    }
+}
+.custom-booking-select-product-button{
+    background-color: transparent;
+    border: 1px solid rgb(212, 212, 212);
+    padding: 1px;
+    width: 70px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: 0.3s ease all;
+}
+.custom-booking-select-product-button:hover{
+    background-color: rgb(0 128 96);
+    color: white;
+}

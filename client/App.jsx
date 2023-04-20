@@ -1,13 +1,11 @@
-import {
-  NavigationMenu,
-  Provider as AppBridgeProvider,
-} from "@shopify/app-bridge-react";
+import {Provider as AppBridgeProvider,} from "@shopify/app-bridge-react";
 import { AppProvider as PolarisProvider } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
 import translations from "@shopify/polaris/locales/en.json";
 import { useRoutes } from "raviger";
 import ApolloClientProvider from "./providers/ApolloClientProvider";
 import routes from "./Routes";
+import './styles/index.css'
 
 const appBridgeConfig = {
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -21,18 +19,6 @@ export default function App() {
   return (
     <PolarisProvider i18n={translations}>
       <AppBridgeProvider config={appBridgeConfig}>
-        {/* <NavigationMenu
-          navigationLinks={[
-            {
-              label: "Calender",
-              destination: "/calender",
-            },
-            {
-              label: "Orders",
-              destination: "/orders",
-            },
-          ]}
-        /> */}
         <ApolloClientProvider>{RouteComponents}</ApolloClientProvider>
       </AppBridgeProvider>
     </PolarisProvider>

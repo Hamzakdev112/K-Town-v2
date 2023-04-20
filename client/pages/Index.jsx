@@ -28,8 +28,7 @@ const HomePage = () => {
       }
     <Page title="Home">
       <Layout>
-
-        <Layout.Section fullWidth>
+        <Layout.Section oneHalf>
           <LegacyCard
             title="Orders"
 
@@ -44,11 +43,22 @@ const HomePage = () => {
             <p>
               Edit your orders
             </p>
-            <div className="search-order-input">
-  </div>
-
-
-
+          </LegacyCard>
+        </Layout.Section>
+        <Layout.Section oneHalf>
+          <LegacyCard
+            title="Custom Bookings"
+            sectioned
+            primaryFooterAction={{
+              content: "Go",
+              onAction: ()=>{
+                navigate("/custom-bookings")
+              }
+            }}
+          >
+            <p>
+              Create custom bookings manually
+            </p>
           </LegacyCard>
         </Layout.Section>
 
